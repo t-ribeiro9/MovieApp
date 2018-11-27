@@ -1,14 +1,16 @@
 package Models;
 
 import java.io.File;
+import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 
 public class MainStorage {
     
     private static int movieCount = 0;
-    private static Set<Movie> movies;
-    private static Set<String> categories;
+    private static Set<Movie> movies = new HashSet<>();
+    private static Set<String> categories = new HashSet<>();
 
     public static void addMovie(String name, File cover){
         Movie mov = new Movie(name, cover, movieCount);
@@ -27,6 +29,26 @@ public class MainStorage {
         return false;
     }
     
+    public static boolean addSeen(String movieName){
+        for (Movie mov : movies){
+            if (mov.getTitle().equals(movieName)){
+                mov.setSeen(true);
+                return true;
+            }
+        }
+        return false;
+    } 
+    
+    public static Set<Movie> getSeenMovies(){
+        Set<Movie> seenMovies = new HashSet<>();
+        for (Movie mov : movies){
+            if (mov.getSeen()){
+                seenMovies.add(mov);
+            }
+        }
+        return seenMovies;
+    }
+    
     public static Set<Movie> getMovies() {
         return movies;
     }
@@ -41,6 +63,19 @@ public class MainStorage {
             moviesCat.add(mov);
         }
         return moviesCat;
+    }
+    
+    public static Movie getRandomMovie(){
+        Random r = new Random();
+        int randomMovieInt = r.nextInt(movies.size());
+        int i = 0;
+        for (Movie mov : movies){
+            if (i == randomMovieInt){
+                return mov;
+            }
+            i++;
+        }
+        return null;
     }
 
     public static void setMovies(Set<Movie> movies) {

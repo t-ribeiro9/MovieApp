@@ -1,6 +1,7 @@
 package Models;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -9,7 +10,8 @@ public class Movie {
     private int id;
     private String title;
     private File cover;
-    private Set<String> categories;
+    private Set<String> categories = new HashSet<>();
+    private boolean seen = false;
 
     public Movie(String title, File cover, int id) {
         this.title = title;
@@ -33,6 +35,18 @@ public class Movie {
     public Set<String> getCategories() {
         return categories;
     }
+    
+    public String getAllCategories(){
+        String categoriesString = "";
+        for (String cat : categories){
+            categoriesString += cat + ", ";
+        }
+        return categoriesString.substring(0, categoriesString.length() - 2);
+    }
+    
+    public boolean getSeen(){
+        return seen;
+    }
 
     public void setTitle(String title) {
         this.title = title;
@@ -48,6 +62,10 @@ public class Movie {
 
     public void setCategories(Set<String> categories) {
         this.categories = categories;
+    }
+    
+    public void setSeen(boolean seen){
+        this.seen = seen;
     }
     
     public void addCategory(String category){

@@ -1,12 +1,19 @@
 package Utils;
 
 import Models.MainStorage;
+import Models.Movie;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Formatter;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class FileManager {
@@ -22,6 +29,9 @@ public class FileManager {
     private static final File CATEGORIES_FILE = new File(CATEGORIES_FILE_PATH); //category;movie name
     private static final String CATEGORIES_LINK = "";
     
+    private static final String SEEN_MOVIES_FILE_PATH = FOLDER_PATH + "/seenMovies.csv";
+    private static final File SEEN_MOVIES_FILE = new File(SEEN_MOVIES_FILE_PATH);
+    
     private static final String DIVIDER = ";";
     
     public static boolean updateFile() throws IOException{
@@ -30,10 +40,11 @@ public class FileManager {
             List<String> categories = getFileLines(CATEGORIES_FILE_PATH);
             File moviesFile = downloadFile(MOVIES_LINK, FOLDER_PATH + "tmpMovies.csv");
             File categoriesFile = downloadFile(CATEGORIES_LINK, FOLDER_PATH + "tmpCategories.csv");
-            if (!checkFileVersion(movies, getFileLines(moviesFile.getAbsolutePath())) && !checkFileVersion(categories, getFileLines(categoriesFile.getAbsolutePath()))){
+            if (!checkFileVersion(movies, getFileLines(moviesFile.getAbsolutePath())) || !checkFileVersion(categories, getFileLines(categoriesFile.getAbsolutePath()))){
                 return updateFile(false, moviesFile, categoriesFile);
             } else {
-                return false;
+                addToStorage(true);
+                return true;
             }
         } else {
             return updateFile(true, null, null);
@@ -47,11 +58,11 @@ public class FileManager {
             CATEGORIES_FILE.delete();
             newMovies.renameTo(MOVIES_FILE);
             newCategories.renameTo(CATEGORIES_FILE);
-            addToStorage();
+            addToStorage(false);
             } else {
             downloadFile(MOVIES_LINK, MOVIES_FILE_PATH);
             downloadFile(CATEGORIES_LINK, CATEGORIES_FILE_PATH);
-            addToStorage();
+            addToStorage(false);
             }
         } catch (IOException e){
             return false;
@@ -67,7 +78,7 @@ public class FileManager {
         throw new UnsupportedOperationException("Not supported yet.");
     }
     
-    private static boolean checkFilesExist(){
+    public static boolean checkFilesExist(){
         return MOVIES_FILE.exists() && CATEGORIES_FILE.exists();
     }
     
@@ -98,7 +109,7 @@ public class FileManager {
         return listString;
     }
     
-    private static void addToStorage() throws IOException{
+    private static void addToStorage(boolean withSeen) throws IOException{
         List<String> moviesList = getFileLines(MOVIES_FILE_PATH);
         List<String> categoriesList = getFileLines(CATEGORIES_FILE_PATH);
         for (String line : moviesList){
@@ -109,6 +120,28 @@ public class FileManager {
         for (String line : categoriesList){
             String[] tab = line.trim().split(DIVIDER);
             MainStorage.addCategory(tab[1], tab[0]);
+        }
+        if (withSeen){
+            List<String> seenMoviesList = getFileLines(SEEN_MOVIES_FILE_PATH);
+            for (String line : seenMoviesList){
+                MainStorage.addSeen(line);
+            }
+        } else {
+            SEEN_MOVIES_FILE.createNewFile();
+        }
+    }
+    
+    public static void saveSeenMovies() throws FileNotFoundException, IOException{
+        Set<Movie> seenMovies = MainStorage.getSeenMovies();
+        if (seenMovies.size() > 0){
+            SEEN_MOVIES_FILE.delete();
+            SEEN_MOVIES_FILE.createNewFile();
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(SEEN_MOVIES_FILE)));
+            for (Movie mov : seenMovies){
+                bw.write(mov.getTitle());
+                bw.newLine();
+            }
+            bw.close();
         }
     }
     
