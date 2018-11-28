@@ -92,7 +92,16 @@ public class Movie {
         }
         return true;
     }
-    
-    
+
+    @Override
+    public String toString() {
+        String seenMovie = "";
+        if (seen){
+            seenMovie = "Seen.";
+        } else {
+            seenMovie = "Not yet seen.";
+        }
+        return title + " - " + seenMovie;
+    }
     
 }
